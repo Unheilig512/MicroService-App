@@ -1,0 +1,189 @@
+version: '3.8'
+
+services:
+
+  # --- БАЗЫ ДАННЫХ И ИНФРАСТРУКТУРА ---
+
+  postgres-auth:
+    image: postgres:15-alpine
+    container_name: postgres-auth
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=auth_db
+    ports:
+      - "5432:5432"
+    networks:
+      - micro-network
+
+  postgres-news:
+    image: postgres:15-alpine
+    container_name: postgres-news
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=news_db
+    ports:
+      - "5433:5432"
+    networks:
+      - micro-network
+
+  postgres-profile:
+    image: postgres:15-alpine
+    container_name: postgres-profile
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=profile_db
+    ports:
+      - "5434:5432"
+    networks:
+      - micro-network
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    networks:
+      - micro-network
+
+  redis:
+    image: redis:latest
+    container_name: redis-local
+    ports:
+      - "6379:6379"
+    networks:
+      - micro-network
+
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka-local
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@localhost:9093
+      - KAFKA_LISTENERS=INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_CLUSTER_ID=4L62YD9IQkiUFvXCEcqRWA
+    networks:
+      - micro-network
+
+  eureka-server:
+    build: ./Eureka-Server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - micro-network
+
+
+  # --- МИКРОСЕРВИСЫ ---
+
+  auth-service:
+    restart: always
+    build: ./Service-Data
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_INITIAL_STATUS=UP
+      - SPRING_APPLICATION_NAME=AUTH-SERVICE
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-auth:5432/auth_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+    depends_on:
+      - eureka-server
+      - postgres-auth
+      - redis
+    networks:
+      - micro-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+
+  news-service:
+    restart: always
+    build: ./News-Service
+    container_name: news-service
+    ports:
+      - "8082:8082"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_APPLICATION_NAME=NEWS-SERVICE
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-news:5432/news_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_DATA_REDIS_HOST=redis
+    depends_on:
+      - eureka-server
+      - postgres-news
+      - redis
+    networks:
+      - micro-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+
+  profile-service:
+    restart: always
+    build: ./Profile-Service
+    container_name: profile-service
+    ports:
+      - "8083:8083"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_APPLICATION_NAME=PROFILE-SERVICE
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-profile:5432/profile_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+    depends_on:
+      - eureka-server
+      - postgres-profile
+    networks:
+      - micro-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+
+  gateway-service:
+    build: ./GateWay
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_APP_JWTSECRET=m'rk@ign!12kjegndk;6gkfd\g9fd;dsfm;512dwm*fmig|n
+      - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED=true
+    depends_on:
+      - eureka-server
+      - auth-service
+    networks:
+      - micro-network
+
+
+networks:
+  micro-network:
+    driver: bridge
