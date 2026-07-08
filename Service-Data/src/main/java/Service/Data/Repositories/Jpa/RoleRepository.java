@@ -1,6 +1,6 @@
 package Service.Data.Repositories.Jpa;
 
-import Service.Data.DTO.Enums.ERole;
+import Service.Data.DTO.ERole;
 import Service.Data.Models.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

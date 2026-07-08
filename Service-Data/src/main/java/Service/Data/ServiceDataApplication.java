@@ -1,6 +1,6 @@
 package Service.Data;
 
-import Service.Data.DTO.Enums.ERole;
+import Service.Data.DTO.ERole;
 import Service.Data.Models.Role;
 import Service.Data.Repositories.Jpa.RoleRepository;
 import org.springframework.boot.CommandLineRunner;

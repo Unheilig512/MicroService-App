@@ -1,6 +1,6 @@
 package Service.Data.JWT;
 
-import Service.Data.DTO.Enums.ERole;
+import Service.Data.DTO.ERole;
 import Service.Data.DTO.Errors.ErrorCode;
 import Service.Data.Exceptions.ExceptionsClasses.JwtAuthenticationException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -39,23 +38,26 @@ public class JWTUtils {
 
     public String GeneraterTokenFromUsername(String username, UUID uuid, List<ERole> roles) {
         return Jwts.builder()
-                .setSubject(username)
+                .subject(username)
                 .claim("id", uuid)           // Добавили ID
                 .claim("roles", roles)     // Добавили Роли
-                .setIssuedAt(new java.util.Date())
-                .setExpiration(new java.util.Date((new java.util.Date()).getTime() + jwtExpirationMs))
+                .issuedAt(new java.util.Date())
+                .expiration(new java.util.Date((new java.util.Date()).getTime() + jwtExpirationMs))
                 .signWith(key())
                 .compact();
     }
 
+    private Claims extractAllClaims(String token){
+        return Jwts.parser()
+                .verifyWith(key())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
     public long getRemainingTime(String token) {
         try {
-            Date expiration = Jwts.parser()
-                    .setSigningKey(jwtSecret)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getExpiration();
+            Date expiration = extractAllClaims(token).getExpiration();
             long remainingTime = expiration.getTime() - System.currentTimeMillis();
             return remainingTime > 0 ? remainingTime : 0;
         }
@@ -65,8 +67,14 @@ public class JWTUtils {
         }
     }
 
-    private Key key(){
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+    public UUID getUserIdFromToken(String token){
+        Claims claims = extractAllClaims(token);
+        return claims.get("id", UUID.class);
+    }
+
+    public String getUsernameFromToken(String token){
+        Claims claims = extractAllClaims(token);
+        return claims.getSubject();
     }
 
     public boolean validateJwtToken(String authToken){
@@ -86,5 +94,9 @@ public class JWTUtils {
         }
     }
 
+    private SecretKey key(){
+        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 
 }

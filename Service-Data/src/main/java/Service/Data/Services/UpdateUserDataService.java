@@ -9,6 +9,8 @@ import Service.Data.Repositories.Jpa.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class UpdateUserDataService {
 
@@ -16,14 +18,14 @@ public class UpdateUserDataService {
     UserRepository userRepository;
 
     public void UpdateUsername(UsernameUpdateEventDTO event){
-        User user = userRepository.findById(event.userId())
+        User user = userRepository.findById(UUID.fromString(event.userId()))
                 .orElseThrow(() -> new UserDoesntExistException(ErrorCode.USER_NOT_FOUND));
         user.setUsername(event.username());
         userRepository.save(user);
     }
 
     public void UpdatePassword(PasswordUpdateEventDTO event){
-        User user = userRepository.findById(event.userId())
+        User user = userRepository.findById(UUID.fromString(event.userId()))
                 .orElseThrow(() -> new UserDoesntExistException(ErrorCode.USER_NOT_FOUND));
         user.setPassword(event.password());
         userRepository.save(user);

@@ -1,7 +1,7 @@
 package Service.Data.Models;
 
 
-import Service.Data.DTO.Enums.ERole;
+import Service.Data.DTO.ERole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

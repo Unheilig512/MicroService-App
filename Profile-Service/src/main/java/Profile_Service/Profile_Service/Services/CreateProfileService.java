@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 
 @Service
 public class CreateProfileService {
@@ -17,7 +19,7 @@ public class CreateProfileService {
     @Transactional
     public void createProfile(CreateNewUserEventDTO userDTO){
         UserProfile user = new UserProfile();
-        user.setId(userDTO.userId());
+        user.setId(UUID.fromString(userDTO.userId()));
         user.setUsername(userDTO.username());
         user.setPassword(userDTO.password());
         userProfileRepository.save(user);

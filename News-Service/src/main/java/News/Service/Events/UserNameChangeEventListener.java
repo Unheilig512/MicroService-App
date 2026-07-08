@@ -18,7 +18,7 @@ public class UserNameChangeEventListener {
     @Transactional
     @KafkaListener(topics = "user_profile-update-username", groupId = "posts-profile-group")
     public void handleUserNameChangeEvent(UsernameChangeEventDTO event) {
-        UUID authorId = event.userId();
+        UUID authorId = UUID.fromString(event.userId());
         int count = postRepository.updateAuthorName(authorId, event.newUsername());
 
         System.out.println("Updated author name for " + count + " posts for user: " + event.newUsername());

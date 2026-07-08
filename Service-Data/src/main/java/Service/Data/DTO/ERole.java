@@ -1,4 +1,4 @@
-package Service.Data.DTO.Enums;
+package Service.Data.DTO;
 
 public enum ERole {
     ROLE_USER,

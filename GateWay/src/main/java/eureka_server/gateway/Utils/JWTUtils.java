@@ -12,8 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
+import java.security.SignatureException;
 import java.util.Date;
+import java.util.UUID;
 
 
 @Component
@@ -21,9 +22,9 @@ public class JWTUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(JWTUtils.class);
 
     @Value("${spring.app.jwtSecret}")
-        private String jwtSecret;
+    private String jwtSecret;
     @Value("${spring.app.jwtExpirationMs}")
-        private int jwtExpirationMs;
+    private int jwtExpirationMs;
 
     public String GetJwtFromHeader(HttpServletRequest request){
         String bearerToken = request.getHeader("Authorization");
@@ -34,14 +35,17 @@ public class JWTUtils {
         return null;
     }
 
+    private Claims extractAllClaims(String token){
+        return Jwts.parser()
+                .verifyWith(key())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
     public long getRemainingTime(String token) {
         try {
-            Date expiration = Jwts.parser()
-                    .setSigningKey(jwtSecret)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getExpiration();
+            Date expiration = extractAllClaims(token).getExpiration();
             long remainingTime = expiration.getTime() - System.currentTimeMillis();
             return remainingTime > 0 ? remainingTime : 0;
         }
@@ -51,8 +55,14 @@ public class JWTUtils {
         }
     }
 
-    private Key key(){
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+    public UUID getUserIdFromToken(String token){
+        Claims claims = extractAllClaims(token);
+        return claims.get("id", UUID.class);
+    }
+
+    public String getUsernameFromToken(String token){
+        Claims claims = extractAllClaims(token);
+        return claims.getSubject();
     }
 
     public boolean validateJwtToken(String authToken){
@@ -71,6 +81,12 @@ public class JWTUtils {
             throw new JwtAuthenticationException(ErrorCode.UNAUTHORIZED);
         }
     }
+
+    private SecretKey key(){
+        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
 
 
 }

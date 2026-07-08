@@ -1,7 +1,7 @@
 package Service.Data.Controllers;
 
 
-import Service.Data.DTO.Enums.ERole;
+import Service.Data.DTO.ERole;
 import Service.Data.DTO.Errors.ErrorCode;
 import Service.Data.DTO.JWTResponse;
 import Service.Data.DTO.LoginRequest;

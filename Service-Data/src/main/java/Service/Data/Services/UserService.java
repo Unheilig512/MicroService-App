@@ -1,6 +1,6 @@
 package Service.Data.Services;
 
-import Service.Data.DTO.Enums.ERole;
+import Service.Data.DTO.ERole;
 import Service.Data.DTO.Errors.ErrorCode;
 import Service.Data.DTO.Kafka.Producers.UserRegisteredEventDTO;
 import Service.Data.Events.RegistrationEventProducer;

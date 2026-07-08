@@ -32,12 +32,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorMessage> handleValidationException(MethodArgumentNotValidException ex){
         ErrorCode code = ErrorCode.INVALID_CREDENTIALS;
         String error = ex.getBindingResult()
-                //1 вариант - возвращаем все ошибки
-//                .getFieldErrors()
-//                .stream()
-//                .map(err -> err.getField() + ": " + err.getDefaultMessage())
-//                .collect(Collectors.toList());
-                //2 вариант - возвращаем только первое сообщение об ошибке
                 .getFieldErrors()
                 .get(0)
                 .getDefaultMessage();
