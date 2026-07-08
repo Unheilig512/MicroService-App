@@ -1,6 +1,5 @@
 package gateway.Utils;
 
-import Service.Data.DTO.ERole;
 import Service.Data.DTO.ErrorCode;
 import Service.Data.Exceptions.ExceptionsClasses.JwtAuthenticationException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
-import java.util.List;
 
 
 @Component
@@ -34,17 +32,6 @@ public class JWTUtils {
             return bearerToken.substring(7);
         }
         return null;
-    }
-
-    public String GeneraterTokenFromUsername(String username, Long id, List<ERole> roles) {
-        return Jwts.builder()
-                .setSubject(username)
-                .claim("id", id)           // Добавили ID
-                .claim("roles", roles)     // Добавили Роли
-                .setIssuedAt(new java.util.Date())
-                .setExpiration(new java.util.Date((new java.util.Date()).getTime() + jwtExpirationMs))
-                .signWith(key())
-                .compact();
     }
 
     public long getRemainingTime(String token) {
