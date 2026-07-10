@@ -28,6 +28,14 @@ public class GlobalExceptionHandler {
                 .body(new ErrorMessage(code));
     }
 
+    @ExceptionHandler(UserLoginRequestDataWrongException.class)
+    public ResponseEntity<ErrorMessage> handleUserDoesntExist(UserLoginRequestDataWrongException ex){
+        ErrorCode code = ex.getErrorCode();
+        return ResponseEntity
+                .status(code.getCode())
+                .body(new ErrorMessage(code));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorMessage> handleValidationException(MethodArgumentNotValidException ex){
         ErrorCode code = ErrorCode.INVALID_CREDENTIALS;

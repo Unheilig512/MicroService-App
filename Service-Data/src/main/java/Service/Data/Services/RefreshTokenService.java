@@ -61,7 +61,6 @@ public class RefreshTokenService {
             throws UserDoesntExistException{
         User realUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserDoesntExistException(ErrorCode.USER_NOT_FOUND));
-
         return saveNewRefreshToken(realUser.getUuid(), realUser.getUsername());
     }
 

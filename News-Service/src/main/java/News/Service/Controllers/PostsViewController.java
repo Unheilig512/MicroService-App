@@ -17,7 +17,7 @@ public class PostsViewController {
 
     private final PostViewService postViewService;
 
-    @GetMapping
+    @GetMapping()
     public ResponseEntity<?> getPosts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
