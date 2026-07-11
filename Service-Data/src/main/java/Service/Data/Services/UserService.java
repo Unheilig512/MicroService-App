@@ -21,6 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.regex.Pattern;
+
 @Service
 public class UserService {
 
@@ -42,11 +44,15 @@ public class UserService {
     @Autowired
     RefreshTokenService refreshTokenService;
 
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]{3,32}$");
+
     @Transactional
     public void createNewUser(String name, String password)
             throws UserAlreadyExistException {
         if(userRepository.findByUsername(name).isPresent())
             throw new UserAlreadyExistException(ErrorCode.USER_ALREADY_EXISTS);
+        if(!USERNAME_PATTERN.matcher(name).matches())
+            throw new IllegalArgumentException("Invalid username format. Username can only contain letters, numbers, underscores, and hyphens.");
         User user = new User();
         user.setUsername(name);
         user.setPassword(passwordEncoder.encode(password));

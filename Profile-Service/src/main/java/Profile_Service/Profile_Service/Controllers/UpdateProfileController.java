@@ -6,8 +6,9 @@ import Profile_Service.Profile_Service.Exceptions.Exceptions_Classes.UserNotFoun
 import Profile_Service.Profile_Service.Services.UpdateProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RequestMapping("/api/profile")
 @RestController
@@ -16,10 +17,14 @@ public class UpdateProfileController {
     @Autowired
     UpdateProfileService updateProfileService;
 
-    @PostMapping("/change")
-    public ResponseEntity<?> changeProfile(@RequestBody ProfileChangeRequest request) throws Exception {
+    @PostMapping("/change/{id}")
+    public ResponseEntity<?> changeProfile(
+            @RequestBody ProfileChangeRequest request,
+            @RequestHeader("X-User-Id") String userId) {
         if(request == null)
             throw new UserNotFoundException(ErrorCode.RESPONSE_BODY_EMPTY);
+        if(!UUID.fromString(userId).equals(request.getUserId()))
+            return ResponseEntity.status(403).body("User ID is invalid");
         updateProfileService.updateProfile(request);
         return ResponseEntity.ok("Profile updated successfully");
 

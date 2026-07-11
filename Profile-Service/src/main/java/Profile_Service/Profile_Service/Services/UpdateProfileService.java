@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.regex.Pattern;
+
 @Service
 public class UpdateProfileService {
 
@@ -21,12 +23,16 @@ public class UpdateProfileService {
     @Autowired
     UpdateDataEventProducer updateDataEventProducer;
 
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_-]{3,32}$");
+
     @Transactional
     public void updateProfile(ProfileChangeRequest profileChangeRequest){
         UserProfile userProfile = userProfileRepository.findById(profileChangeRequest.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
 
         if(profileChangeRequest.getUsername() != null){
+            if(!USERNAME_PATTERN.matcher(profileChangeRequest.getUsername()).matches())
+                throw new IllegalArgumentException("Invalid username format. Username can only contain letters, numbers, underscores, and hyphens.");
             updateProfileUsername(userProfile, profileChangeRequest.getUsername());
         }
         if(profileChangeRequest.getPassword() != null){

@@ -3,6 +3,7 @@ package News.Service.Models;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -20,18 +21,22 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     @Column(nullable = false, length = 100)
     private String title;
 
+    @NotNull
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @Column(name = "image_url")
     private String imageUrl;
 
+    @NotNull
     @Column(name = "author_id", nullable = false)
     private UUID authorId;
 
+    @NotNull
     @Column(name = "author_name", nullable = false)
     private String authorName;
 

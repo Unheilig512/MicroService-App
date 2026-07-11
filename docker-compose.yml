@@ -95,6 +95,13 @@ services:
 
   # --- МИКРОСЕРВИСЫ ---
 
+#  frontend:
+#    image: node:18-alpine
+#    container_name: frontend
+#    environment:
+#      - port=3000
+#
+
   auth-service:
     restart: always
     build: ./Service-Data

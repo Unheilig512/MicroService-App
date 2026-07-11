@@ -17,10 +17,7 @@ public class ProfileChangeRequest {
 
     @Size(min = 3, max = 50, message = "Логин должен быть от 3 до 50 символов")
     String username;
-
     String password;
-
     String description;
-
     String imageUrl;
 }

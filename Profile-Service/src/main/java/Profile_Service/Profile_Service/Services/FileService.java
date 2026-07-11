@@ -25,15 +25,14 @@ public class FileService {
     @Value("${minio.url}")
     private String minioUrl;
 
-    public String uploadFile(MultipartFile file) {
+    public String uploadFile(MultipartFile file, String userId) {
         try {
             boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
             if (!found) {
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
             }
 
-            String originalFileName = file.getOriginalFilename();
-            String uniqueFileName = UUID.randomUUID().toString() + "_" + originalFileName;
+            String uniqueFileName = UUID.randomUUID().toString() + "/" + userId;
 
             InputStream inputStream = file.getInputStream();
             minioClient.putObject(
@@ -47,7 +46,7 @@ public class FileService {
             return minioUrl + "/" + bucketName + "/" + uniqueFileName;
 
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при загрузке файла в MinIO: " + e.getMessage());
+            throw new RuntimeException("Error loading the file in MinIO: " + e.getMessage());
         }
     }
 }

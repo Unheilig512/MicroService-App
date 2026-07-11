@@ -43,17 +43,16 @@ public class JWTUtils {
                 .getPayload();
     }
 
-    public long getRemainingTime(String token) {
-        try {
-            Date expiration = extractAllClaims(token).getExpiration();
-            long remainingTime = expiration.getTime() - System.currentTimeMillis();
-            return remainingTime > 0 ? remainingTime : 0;
-        }
-        catch (JwtException e) {
-            LOGGER.error("Error parsing JWT token: {}", e.getMessage());
-            return 0;
-        }
-    }
+//    public long getRemainingTime(String token) {
+//        try {
+//            Date expiration = extractAllClaims(token).getExpiration();
+//            long remainingTime = expiration.getTime() - System.currentTimeMillis();
+//            return remainingTime > 0 ? remainingTime : 0;
+//        }
+//        catch (JwtException e) {
+//           return 0;
+//        }
+//    }
 
     public UUID getUserIdFromToken(String token){
         Claims claims = extractAllClaims(token);

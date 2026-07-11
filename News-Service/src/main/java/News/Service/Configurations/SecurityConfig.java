@@ -16,8 +16,8 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable) // Для тестов лучше выключить
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll() // РАЗРЕШАЕМ ВСЕМ
-                        .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
+//                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll() // РАЗРЕШАЕМ ВСЕМ
+//                        .requestMatchers(HttpMethod.POST, "/api/**").permitAll()
                         .anyRequest().authenticated() // Остальное только по логину
                 );
 

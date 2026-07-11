@@ -1,13 +1,15 @@
 package eureka_server.gateway.Filters;
 
 import eureka_server.gateway.Utils.JWTUtils;
-import jakarta.ws.rs.core.HttpHeaders;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.web.server.ServerWebExchange;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -16,7 +18,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
     private final JWTUtils jwtUtils;
 
-    public AuthenticationFilter(JwtUtils jwtUtils) {
+    public AuthenticationFilter(JWTUtils jwtUtils) {
         super(Config.class);
         this.jwtUtils = jwtUtils;
     }
@@ -38,9 +40,13 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                     UUID userId = jwtUtils.getUserIdFromToken(token);
                     String usernameFromToken = jwtUtils.getUsernameFromToken(token);
 
-                    ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                            .header("X-User-Id", userId.toString())
-                            .header("X-User-Name", usernameFromToken)
+                    ServerHttpRequest mutatedRequest = exchange.getRequest().mutate().headers(httpHeaders ->{
+                            httpHeaders.remove("X-User-Id");
+                            httpHeaders.remove("X-User-Name");
+
+                            httpHeaders.set("X-User-Id", userId.toString());
+                            httpHeaders.set("X-User-Name", usernameFromToken);
+                    })
                             .build();
 
                     ServerWebExchange mutatedExchange = exchange.mutate().request(mutatedRequest).build();

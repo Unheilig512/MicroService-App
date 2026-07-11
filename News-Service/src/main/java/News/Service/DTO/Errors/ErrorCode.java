@@ -15,8 +15,9 @@ public enum ErrorCode {
     FORBIDDEN(403, "Доступ запрещен"),
 
     // 404 Not Found
-    USER_NOT_FOUND(404, "Пользователь не найден");
+    USER_NOT_FOUND(404, "Пользователь не найден"),
 
+    UNSUPPORTED_FILE_TYPE(415, "Неподдерживаемый тип файла");
 
     private final int code;
     private final String message;

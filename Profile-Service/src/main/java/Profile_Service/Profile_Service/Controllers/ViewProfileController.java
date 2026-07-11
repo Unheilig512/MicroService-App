@@ -21,7 +21,7 @@ public class ViewProfileController {
     @Autowired
     ViewProfileService viewProfileService;
 
-    @GetMapping("/id")
+    @GetMapping("/{id}")
     public UserProfile ViewProfile(UUID id) throws Exception {
         return viewProfileService.getUserProfile(id);
     }
